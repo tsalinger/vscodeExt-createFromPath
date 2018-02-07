@@ -1,7 +1,7 @@
 {
     "name": "foldercreator",
     "displayName": "FolderCreator",
-    "description": "Create folders of arbitrary depth",
+    "description": "Create multiple folders at once",
     "version": "0.0.1",
     "publisher": "publisher",
     "engines": {
@@ -18,21 +18,20 @@
         "menus": {
             "commandPalette": [
                 {
-                    "command": "extension.createNewFolders",
-                    "when": "filesExplorerFocus"
+                    "command": "extension.createNewFolders"
                 }
             ],
             "explorer/context": [
                 {
                     "command": "extension.createNewFolders",
-                    "group": "1_modification"
+                    "group": "navigation@3"
                 }
             ]
         },
         "commands": [
             {
                 "command": "extension.createNewFolders",
-                "title": "Create new folders"
+                "title": "New Folders From Path"
             }
         ]
     },
@@ -46,7 +45,6 @@
     "devDependencies": {
         "typescript": "^2.6.1",
         "vscode": "^1.1.6",
-        "vscode-uri": "^1.0.1",
         "@types/node": "^7.0.43",
         "@types/mocha": "^2.2.42"
     }

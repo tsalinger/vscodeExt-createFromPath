@@ -1,22 +1,32 @@
 // The module 'assert' provides assertion methods from node
 import * as assert from 'assert';
-const fs = require('fs');
-const path = require('path');
-
-// You can import and use all API from the 'vscode' module
-// as well as import your extension to test it
+import * as fs from 'fs';
+import * as path from 'path';
 import * as vscode from 'vscode';
 import * as myExtension from '../extension';
+import { InputBox } from '../InputBox';
+
+
+/**
+ * TODO:
+ * - add test for newFoldersCommand
+ * 
+ */
 
 // Defines a Mocha test suite to group tests of similar kind together
-suite("Extension Tests", () => {
+suite("Folder Creator", () => {
     const paths = [
         path.join(__dirname, 'a'),
         path.join(__dirname, 'a', 'b'),
         path.join(__dirname, 'a', 'b', 'c')
     ];
 
-    test('Creates a/b/c in root', () => {
+    setup(() => {});
+    teardown(() => {
+        __deleteFolders();
+    });
+
+    test('Creates a/b/c in root', async () => {
         const creator = new myExtension.FolderCreator(__dirname);
         const folderFormats: string[] = [
             // posix:
@@ -34,8 +44,8 @@ suite("Extension Tests", () => {
             'a\\b/c\\'
         ];
 
-        folderFormats.forEach((folderFormat: string) => {
-            creator.createFolders(folderFormat);
+        folderFormats.forEach(async (folderFormat: string) => {
+            await creator.createFolders(folderFormat, );
             paths.forEach(path => assert.ok(fs.existsSync(path), `${path} doesn't exist!`));
             __deleteFolders();
         });
@@ -43,13 +53,22 @@ suite("Extension Tests", () => {
 
     function __deleteFolders() {
         for (let i = paths.length-1; i != -1; i--) {
-            fs.rmdirSync(paths[i]);
+            try {
+                fs.rmdirSync(paths[i]);
+            } catch(e) {
+                // folder has already been successfully deleted in the test
+            }
         }
     }
+});
 
-    // afterEach(function () {
-    //     console.log('Runs after every test in this file');
-    //     __deleteFolders();
-    // });
-
+suite('InputBox', async () => {
+    test('Test validation', async () => {
+        const baseDir = path.dirname(__dirname);  // == ${workspaceFolder}/out/
+        const inputBox = new InputBox(baseDir);
+        let exists = await inputBox.validateInput('test');
+        let doesntExist = await inputBox.validateInput('not_existing_dir');
+        assert.ok(exists);
+        assert.ok(!doesntExist);
+    });
 });
