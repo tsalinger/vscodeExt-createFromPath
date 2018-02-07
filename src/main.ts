@@ -13,11 +13,21 @@ export function activate(context: vscode.ExtensionContext) {
 
 export async function newFoldersCommand(uri: vscode.Uri): Promise<void> {
     if (isLaunchedByContextMenu(uri)) {
-        return new FolderCreator().main(uri.fsPath);
-    } 
+        let wsPath: string = getWorkspaceFolderPathFromDoc(uri);
+        return new FolderCreator().main(wsPath, uri.fsPath);
+    }
+
     else {    // launched by shortcut
         let editor = window.activeTextEditor;
-        if (!editor) {  // no active editor found --> try to use workspace root folder
+        
+        if (editor) { // active editor found --> use folder of that editor
+            let doc = editor.document;
+            let wsPath: string = getWorkspaceFolderPathFromDoc(editor.document.uri);
+            if (!wsPath) return;
+            return new FolderCreator().main(wsPath, doc.uri.fsPath);
+        }
+
+        else {  // no active editor found --> try to use workspace root folder
 
             if (!vscode.workspace.workspaceFolders) {
                 return; // neither editor nor folder open
@@ -33,13 +43,6 @@ export async function newFoldersCommand(uri: vscode.Uri): Promise<void> {
                 }
                 return new FolderCreator().main(wsFolder.uri.fsPath);
             }
-        }
-
-        else {    // active editor found --> use folder of that editor
-            let doc = editor.document;
-            let wsPath: string = getWorkspaceFolderPathFromDoc(editor.document.uri);
-            if (!wsPath) return;
-            return new FolderCreator().main(wsPath);
         }
     }
 };

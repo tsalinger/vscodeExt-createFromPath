@@ -10,14 +10,6 @@ const window = vscode.window;
 
 /**
  * TODOs:
- * - Folder display name:
- *      - Start from workspace name
- *      - Start with ellipsis if name too long
- * - Improve validation
- *      - is-valid-path
- * - No error on creating hierarchy with already existing folder --> Algorithm should handle that
- * - Reduce cases. If no editor open but folder open --> handle
- *      - if no editor or folder open, exit
  * - Try to narrow down bug
  */
 
@@ -36,6 +28,10 @@ const window = vscode.window;
  * 
  * - File issue? https://mochajs.org/#arrow-functions --> Passing arrow functions (“lambdas”) to Mocha is discouraged. Lambdas lexically bind this and cannot access the Mocha context.
  *
+ * - this.baseDir
+    "c:\vscode_projects\foldercreator"
+    vscode.workspace.asRelativePath(this.baseDir, true);
+    "c:\vscode_projects\foldercreator" --> shouldn't this return '\' or sth similar?
  */
 
 export class FolderCreator {
@@ -44,10 +40,10 @@ export class FolderCreator {
 
     public constructor(private baseDir?: string) { } // for testing purposes 
 
-    public async main(inputPath: string) {
+    public async main(workspacePath: string, editorPath?: string) {
         try {
-            let dirPath = await this.convertFileToFolderPath(inputPath);
-            let userInput = await this.inputBox.getUserInput(dirPath);
+            let dirPath: string = editorPath ? await this.convertFileToFolderPath(editorPath) : workspacePath;
+            let userInput = await this.inputBox.getUserInput(dirPath, path.basename(workspacePath));
             await this.createFolders(userInput, dirPath);
         } catch (e) {
             console.error(e);
@@ -71,7 +67,9 @@ export class FolderCreator {
         for (let newDir of paths) {
             dirBuilder = path.join(dirBuilder, newDir);
             try {
-                await NodeWrapper.mkdir(dirBuilder);   // check for folder existance is done in inputbox verification
+                if (!await Utils.folderExists(dirBuilder)) {
+                    await NodeWrapper.mkdir(dirBuilder);
+                }
             } catch (e) {
                 console.error(e);
             }
@@ -82,6 +80,17 @@ export class FolderCreator {
         let normalizedPath = path.normalize(input).replace(this.trailingDirSeps, '');
         let dirs = normalizedPath.split(path.sep);
         return dirs;
+    }
+}
+
+export class Utils {
+    public static async folderExists(path): Promise<boolean> {
+        try {
+            await NodeWrapper.fsAccess(path, fs.constants.F_OK);
+            return true;
+        } catch (e) {
+            return false;
+        }
     }
 }
 

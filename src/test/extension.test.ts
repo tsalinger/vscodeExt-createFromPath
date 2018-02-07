@@ -7,13 +7,6 @@ import * as myExtension from '../FolderCreator';
 import { InputBox } from '../InputBox';
 
 
-/**
- * TODO:
- * - Should be able to create folder in existing folder
- * 
- */
-
-
 suite("Folder Creator", () => {
     const paths = [
         path.join(__dirname, 'a'),
@@ -46,6 +39,7 @@ suite("Folder Creator", () => {
 
         for (let folderFormat of folderFormats) {
             await creator.createFolders(folderFormat);
+
             for (let path of paths) {
                 const exists: boolean = fs.existsSync(path);
                 assert.ok(exists === true, `${path} doesn't exist!`);
@@ -70,9 +64,22 @@ suite('InputBox', async () => {
     test('Test validation', async () => {
         const baseDir = path.dirname(__dirname);  // == ${workspaceFolder}/out/
         const inputBox = new InputBox(baseDir);
+        
         let exists = await inputBox.validateInput('test');
         let doesntExist = await inputBox.validateInput('not_existing_dir');
+
         assert.ok(exists);
         assert.ok(!doesntExist);
+    });
+
+    test('Ellipsis are added and prompt is trimmed if max length is reached', async () => {
+        const inputBox = new InputBox();
+        let testData: Array<number> = [];
+        for (let i = 0; i < inputBox.maxPromptChars; i++) { testData.push(i) };
+        
+        let result = inputBox.trimToMaxLength(testData.join(''));
+        
+        assert.equal(result.substring(0, 3), '...');
+        assert.equal(result.length, inputBox.maxPromptChars);
     });
 });
