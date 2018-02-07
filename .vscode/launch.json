@@ -3,12 +3,6 @@
     "version": "0.1.0",
     "configurations": [
         {
-            "type": "node",
-            "request": "launch",
-            "name": "Launch Program",
-            "program": "${workspaceFolder}/out/temp.js"
-        },
-        {
             "name": "Extension",
             "type": "extensionHost",
             "request": "launch",

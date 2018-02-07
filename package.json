@@ -11,26 +11,21 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.createNewFolders"
+        "onCommand:main.createNewFolders"
     ],
-    "main": "./out/extension",
+    "main": "./out/main",
     "contributes": {
         "menus": {
-            "commandPalette": [
-                {
-                    "command": "extension.createNewFolders"
-                }
-            ],
             "explorer/context": [
                 {
-                    "command": "extension.createNewFolders",
-                    "group": "navigation@3"
+                    "command": "main.createNewFolders",
+                    "group": "2_workspace"
                 }
             ]
         },
         "commands": [
             {
-                "command": "extension.createNewFolders",
+                "command": "main.createNewFolders",
                 "title": "New Folders From Path"
             }
         ]

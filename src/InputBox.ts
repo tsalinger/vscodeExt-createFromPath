@@ -1,28 +1,27 @@
 import * as vscode from "vscode";
 import * as path from "path"
 import * as fs from "fs"
-import { NodeWrapper } from "./extension";
+import { NodeWrapper } from "./FolderCreator";
 
 
 export class InputBox {
     constructor(private baseDir?: string) {} // for testing purposes
 
     private inputBoxOptions: vscode.InputBoxOptions = {
-        prompt: 'The folders will be created in: ', // will be completed in getUserInput()
+        prompt: 'Create folders in: ', // will be completed in getUserInput()
         validateInput: this.validateInput.bind(this),
-        placeHolder: 'Enter the folder hierarchy you want to create. Example: main/src/validation'
+        placeHolder: 'Enter relative path. Example: main/src/validation'
     };
 
-    public async getUserInput(baseDir: string): Promise<{ userInput: string, baseDir: string }> {
-        this.baseDir = await this.convertFileToFolderPath(baseDir);
-        this.inputBoxOptions['prompt'] = this.inputBoxOptions.prompt + this.baseDir;
+    public async getUserInput(baseDir: string): Promise<string> {
+        this.baseDir = baseDir;
+        this.setPrompt(this.baseDir);
         const userInput: string = await vscode.window.showInputBox(this.inputBoxOptions);
-        return { userInput: userInput, baseDir: this.baseDir };
+        return userInput;
     }
 
-    private async convertFileToFolderPath(inputPath: string): Promise<string> {
-        let stats = await NodeWrapper.lstat(inputPath);
-        return stats.isFile() ? path.dirname(inputPath) : inputPath;
+    private setPrompt(path: string) {
+        this.inputBoxOptions['prompt'] = this.inputBoxOptions.prompt + path;
     }
 
     public async validateInput(input: string): Promise<string | undefined> {
@@ -36,7 +35,7 @@ export class InputBox {
         }
 
         if (await this.folderExists(absPath)) {
-            return `Folder ${absPath} already exists!`;
+            return `Folder ${absPath} already exists.`;
         }
     }
 

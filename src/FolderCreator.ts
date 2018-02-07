@@ -10,13 +10,14 @@ const window = vscode.window;
 
 /**
  * TODOs:
-
- * - Should be usable from keyboard
- *      - creates in root
- *          - active editor hole doc, dann uri
-            - liste von workspace folders, schauen wo user ist
-            - wenn kein editor, was machen? Root folder oder einfach fragen?
- * 
+ * - Folder display name:
+ *      - Start from workspace name
+ *      - Start with ellipsis if name too long
+ * - Improve validation
+ *      - is-valid-path
+ * - No error on creating hierarchy with already existing folder --> Algorithm should handle that
+ * - Reduce cases. If no editor open but folder open --> handle
+ *      - if no editor or folder open, exit
  * - Try to narrow down bug
  */
 
@@ -30,57 +31,33 @@ const window = vscode.window;
  *          --> Impossible, try-catch only way: https://stackoverflow.com/a/1976050
  * 
  * - If multi-workspace: Creating a new folder is not reflected in the UI unless you push refresh. Is this a bug?
+ * 
+ * - Using showWorkspaceFolderPick only works if a workspace is opened. Otherwise, nothing happens.
+ * 
+ * - File issue? https://mochajs.org/#arrow-functions --> Passing arrow functions (“lambdas”) to Mocha is discouraged. Lambdas lexically bind this and cannot access the Mocha context.
+ *
  */
-
-export function activate(context: vscode.ExtensionContext) {
-    let disposable = vscode.commands.registerCommand('extension.createNewFolders', tempDelete /*newFoldersCommand*/);
-    context.subscriptions.push(disposable);
-}
-
-export function tempDelete() {  // TODO remove
-    window.showWorkspaceFolderPick().then(() => {
-        console.log('hi');
-    });
-}
-
-export function newFoldersCommand(uri: vscode.Uri) {
-    if (isLaunchedFromShortcut(uri)) {
-        /** 
-         * - No active editor? --> Ask user
-         * - Is it multi-workspace? --> check which is active --> Not required in my case?
-         * - Get active editor uri
-         * 
-        */
-        let editor = window.activeTextEditor;
-        if (!editor) {
-            console.error('Launched by shortcut but no active editor found!');
-            return;
-        }
-
-        let doc = editor.document;
-        uri = editor.document.uri;  // TODO: More safety checks required?
-    }
-    new FolderCreator().main(uri.fsPath);
-};
-
-function isLaunchedFromShortcut(inputPath: { path: string }): boolean {
-    return (!inputPath || !inputPath.path);
-}
 
 export class FolderCreator {
     private trailingDirSeps: RegExp = /[\\/]$/;
     private inputBox: InputBox = new InputBox();
 
-    public constructor(private baseDir?: string) { } // for testing purposes
+    public constructor(private baseDir?: string) { } // for testing purposes 
 
     public async main(inputPath: string) {
         try {
-            let { userInput, baseDir } = await this.inputBox.getUserInput(inputPath);
-            await this.createFolders(userInput, baseDir);
+            let dirPath = await this.convertFileToFolderPath(inputPath);
+            let userInput = await this.inputBox.getUserInput(dirPath);
+            await this.createFolders(userInput, dirPath);
         } catch (e) {
             console.error(e);
             window.showErrorMessage('An error occured while creating the folders. Please check the logs for more information.');
         }
+    }
+
+    private async convertFileToFolderPath(inputPath: string): Promise<string> {
+        let stats = await NodeWrapper.lstat(inputPath);
+        return stats.isFile() ? path.dirname(inputPath) : inputPath;
     }
 
     public async createFolders(input: string, baseDir: string = this.baseDir) {

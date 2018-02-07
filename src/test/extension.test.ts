@@ -3,17 +3,17 @@ import * as assert from 'assert';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import * as myExtension from '../extension';
+import * as myExtension from '../FolderCreator';
 import { InputBox } from '../InputBox';
 
 
 /**
  * TODO:
- * - add test for newFoldersCommand
+ * - Should be able to create folder in existing folder
  * 
  */
 
-// Defines a Mocha test suite to group tests of similar kind together
+
 suite("Folder Creator", () => {
     const paths = [
         path.join(__dirname, 'a'),
@@ -21,12 +21,12 @@ suite("Folder Creator", () => {
         path.join(__dirname, 'a', 'b', 'c')
     ];
 
-    setup(() => {});
+    setup(() => { });
     teardown(() => {
         __deleteFolders();
     });
 
-    test('Creates a/b/c in root', async () => {
+    test('Creates a/b/c in root with posix, windows, and mixed path separators', async () => {
         const creator = new myExtension.FolderCreator(__dirname);
         const folderFormats: string[] = [
             // posix:
@@ -44,18 +44,22 @@ suite("Folder Creator", () => {
             'a\\b/c\\'
         ];
 
-        folderFormats.forEach(async (folderFormat: string) => {
-            await creator.createFolders(folderFormat, );
-            paths.forEach(path => assert.ok(fs.existsSync(path), `${path} doesn't exist!`));
+        for (let folderFormat of folderFormats) {
+            await creator.createFolders(folderFormat);
+            for (let path of paths) {
+                const exists: boolean = fs.existsSync(path);
+                assert.ok(exists === true, `${path} doesn't exist!`);
+            }
             __deleteFolders();
-        });
+        }
+
     });
 
     function __deleteFolders() {
-        for (let i = paths.length-1; i != -1; i--) {
+        for (let i = paths.length - 1; i != -1; i--) {
             try {
                 fs.rmdirSync(paths[i]);
-            } catch(e) {
+            } catch (e) {
                 // folder has already been successfully deleted in the test
             }
         }
