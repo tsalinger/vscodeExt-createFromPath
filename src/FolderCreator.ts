@@ -11,27 +11,14 @@ const window = vscode.window;
 /**
  * TODOs:
  * - Try to narrow down bug
+ * - Publish
+ *      - create readme
+ *      - check docs for publisher ID
  */
 
 /**
  * Questions:
- * - validateInput --> are there any security related considerations?
- *      - Is it OK to assume that the user will not type anything weird like 'c:\root' etc?
- * 
- * - Validate input
- *      - Check if unsupported characters are used --> Check vscode repo for validation code
- *          --> Impossible, try-catch only way: https://stackoverflow.com/a/1976050
- * 
- * - If multi-workspace: Creating a new folder is not reflected in the UI unless you push refresh. Is this a bug?
- * 
- * - Using showWorkspaceFolderPick only works if a workspace is opened. Otherwise, nothing happens.
- * 
- * - File issue? https://mochajs.org/#arrow-functions --> Passing arrow functions (“lambdas”) to Mocha is discouraged. Lambdas lexically bind this and cannot access the Mocha context.
- *
- * - this.baseDir
-    "c:\vscode_projects\foldercreator"
-    vscode.workspace.asRelativePath(this.baseDir, true);
-    "c:\vscode_projects\foldercreator" --> shouldn't this return '\' or sth similar?
+ * Editor open but no workspace --> quit OK?
  */
 
 export class FolderCreator {

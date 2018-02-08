@@ -9,6 +9,7 @@ const window = vscode.window;
 export function activate(context: vscode.ExtensionContext) {
     let disposable = vscode.commands.registerCommand('main.createNewFolders', newFoldersCommand);
     context.subscriptions.push(disposable);
+
 }
 
 export async function newFoldersCommand(uri: vscode.Uri): Promise<void> {
@@ -19,11 +20,20 @@ export async function newFoldersCommand(uri: vscode.Uri): Promise<void> {
 
     else {    // launched by shortcut
         let editor = window.activeTextEditor;
-        
+
         if (editor) { // active editor found --> use folder of that editor
             let doc = editor.document;
-            let wsPath: string = getWorkspaceFolderPathFromDoc(editor.document.uri);
-            if (!wsPath) return;
+            let wsPath: string = getWorkspaceFolderPathFromDoc(doc.uri);
+
+            if (!wsPath) {  // file not in workspace --> user picks ws folder
+                let wsFolder: vscode.WorkspaceFolder = await vscode.window.showWorkspaceFolderPick();
+                if (!wsFolder) {
+                    window.showErrorMessage('No open workspace folder found.');
+                    return; // no open workspace --> quit   // TODO: check with Martin if OK
+                } else {
+                    wsPath = wsFolder.uri.fsPath;
+                }
+            }
             return new FolderCreator().main(wsPath, doc.uri.fsPath);
         }
 
@@ -53,7 +63,6 @@ function getWorkspaceFolderPathFromDoc(editorUri: vscode.Uri): string | undefine
     if (editorUri.scheme === 'file') {
         const folder = vscode.workspace.getWorkspaceFolder(editorUri);
         if (!folder) {
-            window.showErrorMessage(`File '${path.basename(editorUri.fsPath)}' is not in an opened workspace folder.`);
             return;
         }
         return folder.uri.fsPath;

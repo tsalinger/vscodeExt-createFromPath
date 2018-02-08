@@ -11,7 +11,7 @@ export class InputBox {
     private inputBoxOptions: vscode.InputBoxOptions = {
         prompt: 'Create folders in: ', // will be completed in getUserInput()
         validateInput: this.validateInput.bind(this),
-        placeHolder: 'Enter relative path. Example: main/src/validation'
+        placeHolder: `Enter relative path. Example: main${path.sep}src${path.sep}validation`
     };
 
     public readonly maxPromptChars = 50;
@@ -21,14 +21,14 @@ export class InputBox {
 
     public async getUserInput(baseDir: string, workspaceName: string): Promise<string> {
         this.baseDir = baseDir;
-        this.setPrompt();
+        this.setPrompt(workspaceName);
         const userInput: string = await vscode.window.showInputBox(this.inputBoxOptions);
         return userInput;
     }
 
-    private setPrompt() {
+    private setPrompt(workspaceName: string) {
         let relPath: string = vscode.workspace.asRelativePath(this.baseDir, true);
-        if (relPath === this.baseDir) relPath = path.sep;   // TODO: asRelativePath returns full path back if equal to workspace folder
+        if (relPath === this.baseDir) relPath = workspaceName;   // asRelativePath returns full path back if it's equal to workspace folder
         let trimmedPath = this.trimToMaxLength(this.inputBoxOptions.prompt + relPath);
         this.inputBoxOptions['prompt'] = trimmedPath;
     }
@@ -41,8 +41,12 @@ export class InputBox {
         return relPath;
     }
 
-    public async validateInput(input: string): Promise<string | undefined> {
+    public async validateInput(input: string): Promise<string | null> {
         if (!input) return;
+
+        if (path.isAbsolute(input)) {
+            return `'${input}' mustn't be absolute.`;
+        }
 
         try {
             var absPath = path.join(this.baseDir, input);
@@ -61,7 +65,9 @@ export class InputBox {
 
         let rgx = /^([a-zA-Z]:[\\\/])/
         if (rgx.test(input)) {
-            return `${input} mustn't be absolute.`
+            return `'${input}' mustn't be absolute.`    // TODO: how does this differ from path.isAbsolute check above?
         }
+
+        return null;    // verfication passed
     }
 }

@@ -1,8 +1,9 @@
 # foldercreator README
 
-This is the README for your extension "foldercreator". After writing up a brief description, we recommend including the following sections.
+Creates a folder hierarchy from a given path.
 
 ## Features
+
 
 Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
 
