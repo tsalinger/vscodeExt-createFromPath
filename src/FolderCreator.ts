@@ -11,11 +11,6 @@ const window = vscode.window;
 
 /**
  * TODOs:
- * - Bug: file open but no folder --> inputBox doesn't show correct path
- * - Create one function that finds the current workspace or asks the user
- *      - don't use ws picker if only 1 workspace
- *      - WorkspaceFolder.name --> use it!
- * - Create one function that evals context menu or shortcut
  * - Separate UI from other stuff
  * - 
  * 
@@ -44,10 +39,10 @@ export class FolderCreator {
     private inputBox: InputBox = new InputBox();
     public constructor(private baseDir?: string) { } // for testing purposes 
 
-    public async main(workspacePath: string, editorPath?: string) {
+    public async main(workspaceName: string, editorFilePath?: string) {
         try {
-            let dirPath: string = editorPath ? await this.convertFileToFolderPath(editorPath) : workspacePath;
-            let userInput = await this.inputBox.getUserInput(dirPath, path.basename(workspacePath));
+            let dirPath: string = editorFilePath ? await this.convertFileToFolderPath(editorFilePath) : workspaceName;
+            let userInput = await this.inputBox.getUserInput(dirPath, workspaceName);
             await this.createFolders(userInput, dirPath);
         } catch (e) {
             console.error(e);
