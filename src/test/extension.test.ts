@@ -1,8 +1,7 @@
-// The module 'assert' provides assertion methods from node
 import * as assert from 'assert';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as myExtension from '../FolderCreator';
+import * as creator from '../FolderCreator';
 import { InputBox } from '../InputBox';
 
 
@@ -19,7 +18,6 @@ suite("Folder Creator", () => {
     });
 
     test('Creates a/b/c in root with posix, windows, and mixed path separators', async () => {
-        const creator = new myExtension.FolderCreator(__dirname);
         const folderFormats: string[] = [
             // posix:
             'a/b/c',
@@ -37,7 +35,7 @@ suite("Folder Creator", () => {
         ];
 
         for (let folderFormat of folderFormats) {
-            await creator.createFolders(folderFormat);
+            await creator.createFolders(folderFormat, __dirname);
         }
 
         for (let path of paths) {

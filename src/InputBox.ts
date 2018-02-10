@@ -1,19 +1,17 @@
 "use strict";
 
 import * as vscode from "vscode";
-import * as path from "path"
-import * as fs from "fs"
-import { FileSystem, Utils } from "./FolderCreator";
+import * as path from "path";
+import * as fs from "fs";
+import * as FileSystem from './FileSystem';
 const pathValidator = require('is-valid-path');
 
-export class InputBox {
 
-    private promptFolder: string = 'Create folders in:';
-    private promptFile: string = 'Create file in:';
+export class InputBox {
     private inputBoxOptions: vscode.InputBoxOptions = {
-        prompt: '', // will be set via setPrompt()
+        prompt: 'Create in', // will be set via setPrompt()
         validateInput: this.validateInput.bind(this),
-        placeHolder: `Enter relative path: 'main${path.sep}src' --> new folder. 'main${path.sep}src' (no slash @ end) --> new file.`
+        placeHolder: `Enter relative path: 'main${path.sep}src${path.sep}' creates a new folder while 'js${path.sep}file.js' (no slash at end!) creates a new file.`
     };
 
     public readonly maxPromptChars = 50;
@@ -23,7 +21,7 @@ export class InputBox {
     public async getUserInput(baseDir: string, workspaceName: string): Promise<string> {
         this.baseDir = baseDir;
         this.relPathToWorkspace = this.createRelPathToWorkspace(workspaceName);
-        this.setPrompt(this.promptFolder);
+        this.setPrompt();
         const userInput: string = await vscode.window.showInputBox(this.inputBoxOptions);
         return userInput;
     }
@@ -34,8 +32,8 @@ export class InputBox {
         return relPath;
     }
 
-    private setPrompt(promptStart: string) {
-        let trimmedPath = this.trimToMaxLength(promptStart + this.relPathToWorkspace);
+    private setPrompt() {
+        let trimmedPath = this.trimToMaxLength(this.inputBoxOptions.prompt + ' ' + this.relPathToWorkspace);
         this.inputBoxOptions['prompt'] = trimmedPath;
     }
 
@@ -61,7 +59,7 @@ export class InputBox {
             return `Invalid input: ${input}.`;
         }
 
-        if (await Utils.pathExists(absPath)) {
+        if (await FileSystem.pathExists(absPath)) {
             return `Folder ${absPath} already exists.`;
         }
 
@@ -74,8 +72,6 @@ export class InputBox {
             return `'${input}' mustn't be absolute.`    // TODO: how does this differ from path.isAbsolute check above?
         }
 
-        let promptStart: string = input.slice(-1) === path.sep ? this.promptFolder : this.promptFile;   // TODO: can't update inputBox!
-        this.setPrompt(promptStart)
         return null;    // verfication passed
     }
 }
