@@ -1,61 +1,7 @@
 import * as assert from 'assert';
-import * as fs from 'fs';
 import * as path from 'path';
-import * as creator from '../FolderCreator';
 import { InputBox } from '../InputBox';
 
-
-suite("Folder Creator", () => {
-    const paths = [
-        path.join(__dirname, 'a'),
-        path.join(__dirname, 'a', 'b'),
-        path.join(__dirname, 'a', 'b', 'c')
-    ];
-
-    setup(() => { });
-    teardown(() => {
-        __deleteFolders();
-    });
-
-    test('Creates a/b/c in root with posix, windows, and mixed path separators', async () => {
-        const folderFormats: string[] = [
-            // posix:
-            'a/b/c',
-            'a/b/c/',
-
-            // windows:
-            'a\\b\\c',
-            'a\\b\\c\\',
-
-            // mixed:
-            'a/b\\c',
-            'a\\b/c',
-            'a\\b/c//',
-            'a\\b/c\\'
-        ];
-
-        for (let folderFormat of folderFormats) {
-            await creator.createFolders(folderFormat, __dirname);
-        }
-
-        for (let path of paths) {
-            const exists: boolean = fs.existsSync(path);
-            assert.ok(exists === true, `${path} doesn't exist!`);
-        }
-        __deleteFolders();
-
-    });
-
-    function __deleteFolders() {
-        for (let i = paths.length - 1; i != -1; i--) {
-            try {
-                fs.rmdirSync(paths[i]);
-            } catch (e) {
-                // folder has already been successfully deleted in the test
-            }
-        }
-    }
-});
 
 suite('InputBox', async () => {
     test('Validation: folder existance', async () => {
@@ -84,7 +30,7 @@ suite('InputBox', async () => {
         ]
 
         for (let absPath of absolutePaths) {
-            let result: string = await inputBox.validateInput(absPath);
+            let result: string | null = await inputBox.validateInput(absPath);
             assert.ok(typeof (result) === 'string', `'${absPath}' is not detected as absolute path.`);
         }
     });
@@ -100,7 +46,7 @@ suite('InputBox', async () => {
         ];
 
         for (let allowedPath of allowedPaths) {
-            let result: string = await inputBox.validateInput(allowedPath);
+            let result: string | null = await inputBox.validateInput(allowedPath);
             assert.ok(result === null, `'${allowedPath}' did not pass the validation.`);
         }
 

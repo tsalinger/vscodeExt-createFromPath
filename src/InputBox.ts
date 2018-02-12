@@ -2,7 +2,6 @@
 
 import * as vscode from "vscode";
 import * as path from "path";
-import * as fs from "fs";
 import * as FileSystem from './FileSystem';
 const pathValidator = require('is-valid-path');
 
@@ -15,14 +14,14 @@ export class InputBox {
     };
 
     public readonly maxPromptChars = 50;
+    constructor(private baseDir: string = '', // for testing purposes
+        private relPathToWorkspace?: string) { }
 
-    constructor(private baseDir?: string, private relPathToWorkspace?: string) {} // for testing purposes
-    
-    public async getUserInput(baseDir: string, workspaceName: string): Promise<string> {
+    public async getUserInput(baseDir: string, workspaceName: string): Promise<string | undefined> {
         this.baseDir = baseDir;
         this.relPathToWorkspace = this.createRelPathToWorkspace(workspaceName);
         this.setPrompt();
-        const userInput: string = await vscode.window.showInputBox(this.inputBoxOptions);
+        const userInput: string | undefined = await vscode.window.showInputBox(this.inputBoxOptions);
         return userInput;
     }
 
@@ -46,7 +45,7 @@ export class InputBox {
     }
 
     public async validateInput(input: string): Promise<string | null> {
-        if (!input) return;
+        if (!input || !input.trim()) return <string>this.inputBoxOptions.prompt;
 
         if (path.isAbsolute(input)) {
             return `'${input}' mustn't be absolute.`;
@@ -65,11 +64,6 @@ export class InputBox {
 
         if (!pathValidator(absPath)) {
             return `${absPath} is not a valid folder.`;
-        }
-
-        let rgx = /^([a-zA-Z]:[\\\/])/
-        if (rgx.test(input)) {
-            return `'${input}' mustn't be absolute.`    // TODO: how does this differ from path.isAbsolute check above?
         }
 
         return null;    // verfication passed
