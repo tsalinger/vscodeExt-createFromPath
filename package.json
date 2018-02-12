@@ -4,6 +4,10 @@
     "description": "Create path hierarchies at once",
     "version": "1.0.0",
     "publisher": "tsal",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/tsalinger/vscodeExt-createFromPath.git"
+    },
     "engines": {
         "vscode": "^1.19.0"
     },
