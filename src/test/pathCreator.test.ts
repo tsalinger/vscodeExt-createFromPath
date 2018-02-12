@@ -5,7 +5,7 @@ import * as creator from '../PathCreator';
 import * as FileSystem from '../FileSystem';
 import * as rmDirRecursively from 'rimraf';
 
-suite("Folder Creator", () => {
+suite("Path Creator", () => {
     const absTestFolderPath: string = path.join(__dirname, 'testFolder');
 
     suiteSetup(() => {
@@ -20,7 +20,7 @@ suite("Folder Creator", () => {
         rmDirRecursively.sync(absTestFolderPath + "/**/*");
     });
 
-    test('Creates a/b/c with posix, windows, and mixed path separators', async () => {
+    test('Creates folders with posix, windows, and mixed path separators', async () => {
         const folderFormats: string[] = [
             // posix:
             'a/1/c/',
@@ -50,7 +50,7 @@ suite("Folder Creator", () => {
     });
 
 
-    test('Creates a/b/c/testFile.txt in root with posix, windows, and mixed path separators', async () => {
+    test('Creates folders and a testFile.txt with posix, windows, and mixed path separators', async () => {
         const folderFormats: string[] = [
             // posix:
             'a/1/c/testFile.txt',
